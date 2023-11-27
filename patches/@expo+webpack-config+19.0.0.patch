@@ -1,0 +1,87 @@
+diff --git a/node_modules/@expo/webpack-config/webpack/addons/withDevServer.js b/node_modules/@expo/webpack-config/webpack/addons/withDevServer.js
+index 26c6b1d..b5ff4f0 100644
+--- a/node_modules/@expo/webpack-config/webpack/addons/withDevServer.js
++++ b/node_modules/@expo/webpack-config/webpack/addons/withDevServer.js
+@@ -218,6 +218,9 @@ function createDevServer(env, { allowedHost, proxy } = {}) {
+             (0, noopServiceWorkerMiddleware_1.createNoopServiceWorkerMiddleware)(publicUrlOrPath));
+             return middlewares;
+         },
++
++        // Enable hot module reloading
++        hot: true
+     };
+ }
+ exports.createDevServer = createDevServer;
+diff --git a/node_modules/@expo/webpack-config/webpack/loaders/createAllLoaders.js b/node_modules/@expo/webpack-config/webpack/loaders/createAllLoaders.js
+index 8dcd527..a9b2df6 100644
+--- a/node_modules/@expo/webpack-config/webpack/loaders/createAllLoaders.js
++++ b/node_modules/@expo/webpack-config/webpack/loaders/createAllLoaders.js
+@@ -118,20 +118,31 @@ function createAllLoaders(env) {
+         exports.avifImageLoaderRule,
+         exports.imageLoaderRule,
+         getBabelLoaderRule(env),
++        {
++            test: /\.(css)$/,
++            use: getStyleLoaders({
++                sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
++            }),
++            // Don't consider CSS imports dead code even if the
++            // containing package claims to have no side effects.
++            // Remove this when webpack adds a warning or an error for this.
++            // See https://github.com/webpack/webpack/issues/6571
++            sideEffects: true,
++            exclude: /\.module\.css$/,
++        },
+         {
+             test: /\.(css)$/,
+             use: getStyleLoaders({
+                 importLoaders: 1,
+                 sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+-                modules: {
+-                    mode: 'icss',
+-                },
++                modules: true,
+             }),
+             // Don't consider CSS imports dead code even if the
+             // containing package claims to have no side effects.
+             // Remove this when webpack adds a warning or an error for this.
+             // See https://github.com/webpack/webpack/issues/6571
+             sideEffects: true,
++            include: /\.module\.css$/,
+         },
+         // This needs to be the last loader
+         exports.fallbackLoaderRule,
+diff --git a/node_modules/@expo/webpack-config/webpack/loaders/createBabelLoader.js b/node_modules/@expo/webpack-config/webpack/loaders/createBabelLoader.js
+index 0ededbf..2c18bb8 100644
+--- a/node_modules/@expo/webpack-config/webpack/loaders/createBabelLoader.js
++++ b/node_modules/@expo/webpack-config/webpack/loaders/createBabelLoader.js
+@@ -122,6 +122,8 @@ mode, projectRoot: inputProjectRoot, babelProjectRoot, include = [], verbose, pl
+         babelrc: false,
+         // Attempt to use local babel.config.js file for compiling project.
+         configFile: true,
++        // Enable fast refresh
++        plugins: [!isProduction && require.resolve('react-refresh/babel')].filter(Boolean),
+     };
+     if (!fs_1.default.existsSync(path_1.default.join(projectRoot, 'babel.config.js')) &&
+         !fs_1.default.existsSync(path_1.default.join(projectRoot, '.babelrc'))) {
+diff --git a/node_modules/@expo/webpack-config/webpack/webpack.config.js b/node_modules/@expo/webpack-config/webpack/webpack.config.js
+index 4556fe1..5b251c6 100644
+--- a/node_modules/@expo/webpack-config/webpack/webpack.config.js
++++ b/node_modules/@expo/webpack-config/webpack/webpack.config.js
+@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
+ const chalk_1 = __importDefault(require("chalk"));
+ const clean_webpack_plugin_1 = require("clean-webpack-plugin");
+ const copy_webpack_plugin_1 = __importDefault(require("copy-webpack-plugin"));
++const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+ const crypto_1 = require("crypto");
+ const expo_pwa_1 = require("expo-pwa");
+ const fs_1 = __importDefault(require("fs"));
+@@ -317,6 +318,8 @@ async function default_1(env, argv = {}) {
+                         minify: isProd !== null && isProd !== void 0 ? isProd : false,
+                     },
+                 }),
++            // Hot refresh
++            isDev && new ReactRefreshWebpackPlugin()
+         ].filter(Boolean),
+         module: {
+             strictExportPresence: false,
