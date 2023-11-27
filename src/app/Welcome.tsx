@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Image, View } from 'react-native';
 import { Text } from '../components/Text';
 import { RoundButton } from '../components/RoundButton';
-import { useNavigation } from './_navigation';
+import { useNavigation } from '../utils/useNavigation';
 
 export const Welcome = React.memo(() => {
     const navigation = useNavigation();

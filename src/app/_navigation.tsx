@@ -1,17 +1,18 @@
 import * as React from 'react';
-import { NavigationContainer, NavigationProp } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Welcome } from './Welcome';
 import { Theme } from '../styles/Theme';
 import { Connect } from './Connect';
-import { useNavigation as useNavigationDefault } from '@react-navigation/native';
+import { App } from './App';
+import { PickModel } from './PickModel';
 
-type RootStackParamList = {
+export type RootStackParamList = {
     Welcome: undefined;
     App: undefined;
     Connect: undefined;
+    PickModel: { models: string[] }
 };
-
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -19,7 +20,20 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export const Navigation = React.memo((props: { initial: 'welcome' | 'app' }) => {
     return (
         <NavigationContainer>
-            <Stack.Navigator initialRouteName={props.initial === 'welcome' ? 'Welcome' : 'App'} screenOptions={{ contentStyle: { backgroundColor: Theme.background } }}>
+            <Stack.Navigator
+                initialRouteName={props.initial === 'welcome' ? 'Welcome' : 'App'}
+                screenOptions={{
+                    headerTintColor: Theme.accent,
+                    navigationBarColor: Theme.background,
+                    headerShadowVisible: false,
+                    contentStyle: { backgroundColor: Theme.background }
+                }}
+            >
+                <Stack.Screen
+                    name="App"
+                    component={App}
+                    options={{ headerShown: true, title: 'Chat' }}
+                />
                 <Stack.Screen
                     name="Welcome"
                     component={Welcome}
@@ -28,12 +42,14 @@ export const Navigation = React.memo((props: { initial: 'welcome' | 'app' }) => 
                 <Stack.Screen
                     name="Connect"
                     component={Connect}
+                    options={{ title: 'Connect to Ollama' }}
+                />
+                <Stack.Screen
+                    name="PickModel"
+                    component={PickModel}
+                    options={{ title: 'Pick Model' }}
                 />
             </Stack.Navigator>
         </NavigationContainer>
     )
 });
-
-export function useNavigation() {
-    return useNavigationDefault<NavigationProp<RootStackParamList>>();
-}
