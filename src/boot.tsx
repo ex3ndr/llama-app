@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { Root } from './app/_root';
-import { delay } from './utils/time';
+import { loadLibs } from './libs';
 
 export const Boot = React.memo(() => {
 
@@ -11,8 +10,18 @@ export const Boot = React.memo(() => {
     // Loading
     React.useEffect(() => {
         (async () => {
-            await delay(5000);
-            setRoot(<Root />);
+
+            // Load luibs
+            await loadLibs();
+
+            // Load component
+            // NOTE: We are doing this async to make them loaded only
+            //       after some modules are loaded, like Skia.
+            //       This greadly simplifies things since you can write
+            //       your code as is and avoid weird boilerplate
+            let Root = (await import('./app/_root')).Root;
+            let root = await Root();
+            setRoot(root);
         })();
     }, []);
 

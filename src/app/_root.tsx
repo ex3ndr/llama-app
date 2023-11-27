@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Welcome } from './Welcome';
+import { Navigation } from './_navigation';
 
-export const Root = React.memo(() => {
-    return <Welcome />;
-});
+export async function Root(): Promise<React.JSX.Element> {
+    return <Navigation initial='welcome' />;
+};

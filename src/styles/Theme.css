@@ -3,8 +3,8 @@
     Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color-scheme: light;
+  color: rgba(0, 0, 0, 0.87);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -14,5 +14,5 @@
 }
 
 body {
-  background-color: #000;
+  background-color: #fff;
 }
