@@ -1,9 +1,20 @@
 import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, NavigationProp } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Welcome } from './Welcome';
 import { Theme } from '../styles/Theme';
-const Stack = createNativeStackNavigator();
+import { Connect } from './Connect';
+import { useNavigation as useNavigationDefault } from '@react-navigation/native';
+
+type RootStackParamList = {
+    Welcome: undefined;
+    App: undefined;
+    Connect: undefined;
+};
+
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
 
 export const Navigation = React.memo((props: { initial: 'welcome' | 'app' }) => {
     return (
@@ -14,7 +25,15 @@ export const Navigation = React.memo((props: { initial: 'welcome' | 'app' }) => 
                     component={Welcome}
                     options={{ headerShown: false }}
                 />
+                <Stack.Screen
+                    name="Connect"
+                    component={Connect}
+                />
             </Stack.Navigator>
         </NavigationContainer>
     )
 });
+
+export function useNavigation() {
+    return useNavigationDefault<NavigationProp<RootStackParamList>>();
+}
