@@ -5,10 +5,32 @@ import { View } from 'react-native';
 import { Input } from '../components/Input';
 import { KeyboarAvoidingContent } from '../components/KeyboardAvoidingContent';
 import { useNavigation } from '../utils/useNavigation';
+import { FlashList } from "@shopify/flash-list";
+import { Text } from '../components/Text';
+
+const MessageComponent = React.memo((props: { text: string, sender: 'user' | 'assistant' }) => {
+    return (
+        <View style={{ paddingHorizontal: 16, flexDirection: 'row', paddingVertical: 4 }}>
+            <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: 'grey' }} />
+            <View style={{ flexDirection: 'column', marginLeft: 8, flexGrow: 1, flexBasis: 0 }}>
+                <Text style={{ fontSize: 18, fontWeight: '600', height: 24 }}>{props.sender}</Text>
+                <Text style={{ fontSize: 16 }}>{props.text}</Text>
+            </View>
+        </View>
+    )
+});
 
 export const App = React.memo(() => {
     const state = useAppState();
     const navigation = useNavigation();
+    const [message, setMessage] = React.useState('');
+    const doSend = () => {
+        let m = message.trim();
+        if (m.length > 0 && state.lastModel) {
+            state.sendMessage(m);
+            setMessage('');
+        }
+    }
 
     return (
         <KeyboarAvoidingContent>
@@ -21,11 +43,16 @@ export const App = React.memo(() => {
                     onPress={() => navigation.navigate('PickModel', { models: state.models! })}
                 />
             </View>
-            <View style={{ flexGrow: 1, flexBasis: 0 }}>
-
-            </View>
-            <View style={{ marginBottom: 8, marginHorizontal: 16 }}>
-                <Input placeholder='Message' />
+            <FlashList
+                data={state.chat ? [...state.chat.messages].reverse() : []}
+                renderItem={(item) => (<MessageComponent text={item.item.content.value} sender={item.item.sender} />)}
+                style={{ flexGrow: 1, flexBasis: 0 }}
+                contentContainerStyle={{ paddingBottom: 16 }}
+                inverted={true}
+            />
+            <View style={{ marginBottom: 8, marginHorizontal: 16, flexDirection: 'row' }}>
+                <Input placeholder='Message' style={{ flexGrow: 1, marginRight: 16 }} value={message} onValueChange={setMessage} />
+                <RoundButton title='Send' onPress={doSend} />
             </View>
         </KeyboarAvoidingContent>
     );

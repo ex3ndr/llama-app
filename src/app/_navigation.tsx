@@ -47,7 +47,7 @@ export const Navigation = React.memo((props: { initial: 'welcome' | 'app' }) => 
                 <Stack.Screen
                     name="PickModel"
                     component={PickModel}
-                    options={{ title: 'Pick Model' }}
+                    options={{ title: 'Pick Model', presentation: 'formSheet' }}
                 />
             </Stack.Navigator>
         </NavigationContainer>

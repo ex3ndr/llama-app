@@ -12,7 +12,7 @@ export const PickModel = React.memo(() => {
     return (
         <ScrollView>
             {models.map((model) => (
-                <View style={{ marginHorizontal: 16, marginVertical: 8 }}>
+                <View style={{ marginHorizontal: 16, marginVertical: 8 }} key={model}>
                     <RoundButton
                         title={model}
                         size='normal'
