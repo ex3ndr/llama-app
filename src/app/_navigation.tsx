@@ -32,7 +32,7 @@ export const Navigation = React.memo((props: { initial: 'welcome' | 'app' }) => 
                 <Stack.Screen
                     name="App"
                     component={App}
-                    options={{ headerShown: true, title: 'Chat' }}
+                    options={{ headerShown: false }}
                 />
                 <Stack.Screen
                     name="Welcome"

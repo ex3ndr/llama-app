@@ -13,6 +13,10 @@
   background-color: transparent;
 }
 
+*:focus {
+  outline: none;
+}
+
 body {
   background-color: #fff;
 }

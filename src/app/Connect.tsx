@@ -12,6 +12,7 @@ import { writeEndpoint } from '../storage/storage';
 import { loadState } from '../storage/State';
 import { useNavigation } from '../utils/useNavigation';
 import { StackActions } from '@react-navigation/native';
+import { Box } from '../components/Box';
 
 export const Connect = React.memo(() => {
     const [url, setUrl] = React.useState('');
@@ -62,7 +63,7 @@ export const Connect = React.memo(() => {
 
     return (
         <KeyboarAvoidingContent>
-            <View style={{ flexGrow: 1, flexBasis: 0, flexDirection: 'column', justifyContent: 'center', paddingHorizontal: 24, paddingBottom: 8 }}>
+            <Box style={{ flexGrow: 1, flexBasis: 0, flexDirection: 'column', justifyContent: 'center', paddingHorizontal: 24, paddingBottom: 8, alignItems: 'stretch' }} maxWidth={500}>
                 <View style={{ flexGrow: 1 }} />
                 <View>
                     <Text style={{ fontSize: 24, marginBottom: 24 }}>Endpoint of Ollama server</Text>
@@ -80,7 +81,7 @@ export const Connect = React.memo(() => {
                 </View>
                 <View style={{ flexGrow: 1 }} />
                 <RoundButton title='Connect' loading={loading} onPress={doConnect} />
-            </View>
+            </Box>
         </KeyboarAvoidingContent>
     );
 });
