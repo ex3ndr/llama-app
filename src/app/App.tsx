@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useAppState } from '../storage/State';
 import { RoundButton } from '../components/RoundButton';
-import { View } from 'react-native';
+import { Image, View } from 'react-native';
 import { Input } from '../components/Input';
 import { KeyboarAvoidingContent } from '../components/KeyboardAvoidingContent';
 import { useNavigation } from '../utils/useNavigation';
@@ -11,9 +11,12 @@ import { Text } from '../components/Text';
 const MessageComponent = React.memo((props: { text: string, sender: 'user' | 'assistant' }) => {
     return (
         <View style={{ paddingHorizontal: 16, flexDirection: 'row', paddingVertical: 4 }}>
-            <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: 'grey' }} />
+            <Image
+                style={{ width: 24, height: 24 }}
+                source={props.sender === 'user' ? require('../../assets/avatar_user.png') : require('../../assets/avatar_assistant.png')}
+            />
             <View style={{ flexDirection: 'column', marginLeft: 8, flexGrow: 1, flexBasis: 0 }}>
-                <Text style={{ fontSize: 18, fontWeight: '600', height: 24 }}>{props.sender}</Text>
+                <Text style={{ fontSize: 18, fontWeight: '600', height: 24 }}>{props.sender == 'user' ? 'You' : 'Assistant'}</Text>
                 <Text style={{ fontSize: 16 }}>{props.text}</Text>
             </View>
         </View>
@@ -39,7 +42,7 @@ export const App = React.memo(() => {
                     title={state.lastModel ? state.lastModel : 'Pick model'}
                     display='default'
                     size='normal'
-                    loading={state.models === null} disabled={state.models === null || state.models.length === 0}
+                    loading={state.models === null} disabled={!!state.chat || state.models === null || state.models.length === 0}
                     onPress={() => navigation.navigate('PickModel', { models: state.models! })}
                 />
             </View>

@@ -1,4 +1,4 @@
-import { ollamaInference } from "../api/ollamaInference";
+import { ollamaInference, ollamaInferenceStreaming } from "../api/ollamaInference";
 import { ollamaTags } from "../api/ollamaTags";
 import { InvalidateSync } from "../utils/invalidate";
 import { sync } from "../utils/sync";
@@ -12,6 +12,7 @@ interface AppState {
     chat: ChatState | null,
     setLastModel: (model: string | null) => void,
     sendMessage: (message: string) => void,
+    onInferenceIntermediate: (message: string) => void
     onInferenceResult: (message: string, context: string) => void
 };
 
@@ -19,7 +20,8 @@ interface MessageState {
     sender: 'assistant' | 'user'
     content: {
         kind: 'text',
-        value: string
+        value: string,
+        generating?: boolean
     }
 }
 
@@ -70,6 +72,13 @@ export async function loadState() {
                                     kind: 'text',
                                     value: message
                                 }
+                            }, {
+                                sender: 'assistant',
+                                content: {
+                                    kind: 'text',
+                                    value: '',
+                                    generating: true
+                                }
                             }],
                             context: null
                         }
@@ -87,6 +96,13 @@ export async function loadState() {
                                         kind: 'text',
                                         value: message
                                     }
+                                }, {
+                                    sender: 'assistant',
+                                    content: {
+                                        kind: 'text',
+                                        value: '',
+                                        generating: true
+                                    }
                                 }]
                             }
                         };
@@ -97,6 +113,29 @@ export async function loadState() {
             });
             inference.invalidate();
         },
+        onInferenceIntermediate(message) {
+            set((state) => {
+                if (state.chat && state.chat.state === 'inference') {
+                    return {
+                        ...state,
+                        chat: {
+                            ...state.chat,
+                            state: 'inference',
+                            messages: [...state.chat.messages.slice(0, state.chat.messages.length - 1), {
+                                sender: 'assistant',
+                                content: {
+                                    kind: 'text',
+                                    value: message,
+                                    generating: true
+                                }
+                            }]
+                        }
+                    };
+                } else {
+                    return state
+                }
+            })
+        },
         onInferenceResult(message, context) {
             set((state) => {
                 if (state.chat && state.chat.state === 'inference') {
@@ -106,7 +145,7 @@ export async function loadState() {
                             ...state.chat,
                             state: 'idle',
                             context,
-                            messages: [...state.chat.messages, {
+                            messages: [...state.chat.messages.slice(0, state.chat.messages.length - 1), {
                                 sender: 'assistant',
                                 content: {
                                     kind: 'text',
@@ -128,16 +167,40 @@ export async function loadState() {
         let now = state.getState();
         if (now.chat && now.chat.state === 'inference') {
 
-            // Doing inference
-            let res = await ollamaInference({
+            // Streaming of inference
+            let res = '';
+            let context: number[] | null = null;
+            for await (let tokens of ollamaInferenceStreaming({
                 endpoint,
                 model: now.chat!.model,
-                message: now.chat!.messages[now.chat!.messages.length - 1].content.value,
+                message: now.chat!.messages[now.chat!.messages.length - 2].content.value,
                 context: now.chat!.context
-            });
+            })) {
+
+                // Update message
+                res += tokens.response;
+
+                // If we are still in inference
+                if (now.chat && now.chat.state === 'inference') {
+                    now.onInferenceIntermediate(res);
+                } else {
+                    throw Error('Aborted');
+                }
+
+                console.warn(tokens)
+
+                // What if we done
+                if (tokens.done) {
+                    context = tokens.context!;
+                    break;
+                }
+            }
+            if (!context) {
+                throw Error('Context was not received');
+            }
 
             // Apply result
-            now.onInferenceResult(res.response, res.context);
+            now.onInferenceResult(res, JSON.stringify(context));
         }
     });
 
