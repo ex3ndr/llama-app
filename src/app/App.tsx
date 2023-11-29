@@ -63,12 +63,14 @@ export const App = React.memo(() => {
                 data={state.chat ? [...state.chat.messages].reverse() : []}
                 renderItem={(item) => (<MessageComponent text={item.item.content.value} sender={item.item.sender} generating={item.item.content.generating ? true : false} />)}
                 style={{ flexGrow: 1, flexBasis: 0 }}
-                contentContainerStyle={{ paddingBottom: 16 }}
+                contentContainerStyle={{ paddingTop: 16 }}
                 inverted={true}
             />
             <View style={{ marginBottom: 8, marginHorizontal: 16, flexDirection: 'row' }}>
-                <Input placeholder='Message' style={{ flexGrow: 1, marginRight: 16 }} value={message} onValueChange={setMessage} />
-                <RoundButton title='Send' onPress={doSend} />
+                <Input placeholder='Message' style={{ flexGrow: 1, flexBasis: 0, marginRight: 16, maxHeight: 128 }} multiline={true} value={message} onValueChange={setMessage} />
+                <View style={{ justifyContent: 'flex-end' }}>
+                    <RoundButton title='Send' onPress={doSend} />
+                </View>
             </View>
         </KeyboarAvoidingContent>
     );

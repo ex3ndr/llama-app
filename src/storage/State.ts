@@ -187,8 +187,6 @@ export async function loadState() {
                     throw Error('Aborted');
                 }
 
-                console.warn(tokens)
-
                 // What if we done
                 if (tokens.done) {
                     context = tokens.context!;

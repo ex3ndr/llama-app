@@ -84,7 +84,7 @@ export const Input = React.memo((props: ATextInputProps) => {
             )}
             <TextInput
                 style={{
-                    height: props.multiline ? 44 * 3 : 48,
+                    height: props.multiline ? undefined : 48,
                     paddingTop: props.multiline ? 12 : 10,
                     paddingBottom: props.multiline ? 14 : (Platform.OS === 'ios' ? 12 : 10),
                     flexGrow: 1,
