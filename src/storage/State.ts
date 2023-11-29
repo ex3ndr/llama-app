@@ -171,7 +171,7 @@ export async function loadState() {
             let res = '';
             let context: number[] | null = null;
             for await (let tokens of ollamaInferenceStreaming({
-                endpoint,
+                endpoint: 'https://rtx.tail08ed6.ts.net',
                 model: now.chat!.model,
                 message: now.chat!.messages[now.chat!.messages.length - 2].content.value,
                 context: now.chat!.context
