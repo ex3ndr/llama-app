@@ -25,6 +25,7 @@
     "expo-splash-screen": "~0.20.5",
     "expo-status-bar": "~1.6.0",
     "expo-system-ui": "~2.4.0",
+    "framer-motion": "^10.6.8",
     "lottie-react-native": "5.1.6",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -37,6 +38,7 @@
     "react-native-screens": "~3.22.0",
     "react-native-unistyles": "^1.2.0",
     "react-native-web": "~0.19.6",
+    "react-native-web-lottie": "^1.4.4",
     "zod": "^3.22.4",
     "zustand": "^4.4.6"
   },

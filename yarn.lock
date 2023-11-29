@@ -1183,6 +1183,18 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
+"@emotion/is-prop-valid@^0.8.2":
+  version "0.8.8"
+  resolved "https://registry.yarnpkg.com/@emotion/is-prop-valid/-/is-prop-valid-0.8.8.tgz#db28b1c4368a259b60a97311d6a952d4fd01ac1a"
+  integrity sha512-u5WtneEAr5IDG2Wv65yhunPSMLIpuKsbuOktRojfrEiEvRyC85LgPMZI63cr7NUqT8ZIGdSVg8ZKGxIug4lXcA==
+  dependencies:
+    "@emotion/memoize" "0.7.4"
+
+"@emotion/memoize@0.7.4":
+  version "0.7.4"
+  resolved "https://registry.yarnpkg.com/@emotion/memoize/-/memoize-0.7.4.tgz#19bf0f5af19149111c40d98bb0cf82119f5d9eeb"
+  integrity sha512-Ja/Vfqe3HpuzRsG1oBtWTHk2PGZ7GR+2Vz5iYGelAw8dx32K0y7PjVuxK6z1nMpZOqAFsRUPCkK1YjJ56qJlgw==
+
 "@expo/bunyan@4.0.0", "@expo/bunyan@^4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@expo/bunyan/-/bunyan-4.0.0.tgz#be0c1de943c7987a9fbd309ea0b1acd605890c7b"
@@ -4493,6 +4505,15 @@ forwarded@0.2.0:
   resolved "https://registry.yarnpkg.com/forwarded/-/forwarded-0.2.0.tgz#2269936428aad4c15c7ebe9779a84bf0b2a81811"
   integrity sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==
 
+framer-motion@^10.6.8:
+  version "10.6.8"
+  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-10.6.8.tgz#d4840fba6aee594bbbfb79ae7dc9ebf4ce464a65"
+  integrity sha512-D4B5/7I4jfbJYpTw6M1kfbx37wqKqQiPig74fo7wPQL9/sUCD/DKBMuZKC9G2+zV3YcRZ18WYqgZLlcz+zKYOg==
+  dependencies:
+    tslib "^2.4.0"
+  optionalDependencies:
+    "@emotion/is-prop-valid" "^0.8.2"
+
 freeport-async@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/freeport-async/-/freeport-async-2.0.0.tgz#6adf2ec0c629d11abff92836acd04b399135bab4"
@@ -5660,6 +5681,11 @@ lottie-react-native@5.1.6:
   dependencies:
     invariant "^2.2.2"
     react-native-safe-modules "^1.0.3"
+
+lottie-web@^5.7.1:
+  version "5.12.2"
+  resolved "https://registry.yarnpkg.com/lottie-web/-/lottie-web-5.12.2.tgz#579ca9fe6d3fd9e352571edd3c0be162492f68e5"
+  integrity sha512-uvhvYPC8kGPjXT3MyKMrL3JitEAmDMp30lVkuq/590Mw9ok6pWcFCwXJveo0t5uqYw1UREQHofD+jVpdjBv8wg==
 
 lower-case@^2.0.2:
   version "2.0.2"
@@ -7270,6 +7296,13 @@ react-native-unistyles@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/react-native-unistyles/-/react-native-unistyles-1.2.0.tgz#ac631b2a60d9d1acfcfb239ab52e49c23c40a7f4"
   integrity sha512-w0ytVDr7AwGhLWm7XPRjM3hhZSF/Db9yfSAFHZcGNoJPf2IJ4QaeF+v18OzZVB74vO7rbCGu8q9fXNHF5bkPGg==
+
+react-native-web-lottie@^1.4.4:
+  version "1.4.4"
+  resolved "https://registry.yarnpkg.com/react-native-web-lottie/-/react-native-web-lottie-1.4.4.tgz#b64d989cf3300bff5813f4ee3f2ee466092e6e4c"
+  integrity sha512-W0jZiOf2u3Us6yASdpgAuL1+3Gw1EU/Wi5QAf6brzhXmJnq6/FMGCTf5zvSaX0yIurr9qcYB40DwAb4HwA6frg==
+  dependencies:
+    lottie-web "^5.7.1"
 
 react-native-web@~0.19.6:
   version "0.19.9"
