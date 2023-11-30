@@ -26,7 +26,8 @@ export const Navigation = React.memo((props: { initial: 'welcome' | 'app' }) => 
                     headerTintColor: Theme.accent,
                     navigationBarColor: Theme.background,
                     headerShadowVisible: false,
-                    contentStyle: { backgroundColor: Theme.background }
+                    contentStyle: { backgroundColor: Theme.background },
+                    title: 'Worklet'
                 }}
             >
                 <Stack.Screen

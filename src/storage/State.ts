@@ -1,4 +1,4 @@
-import { ollamaInference, ollamaInferenceStreaming } from "../api/ollamaInference";
+import { ollamaInferenceStreaming } from "../api/ollamaInference";
 import { ollamaTags } from "../api/ollamaTags";
 import { InvalidateSync } from "../utils/invalidate";
 import { sync } from "../utils/sync";

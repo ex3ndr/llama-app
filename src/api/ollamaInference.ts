@@ -54,7 +54,6 @@ export function ollamaInferenceStreaming(args: { endpoint: string, model: string
                 context: args.context ? JSON.parse(args.context) : null,
                 stream: true
             }, (d, err) => {
-                console.warn(d);
                 if (d) {
                     iterator.controller.push(JSON.parse(d) as OllamaToken);
                 } else {

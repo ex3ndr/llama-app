@@ -61,6 +61,7 @@ export interface ATextInputProps {
 }
 
 export const Input = React.memo((props: ATextInputProps) => {
+    const lines = React.useMemo(() => props.value ? props.value.split('\n').length : 1, [props.value]);
     return (
         <View style={[{
             backgroundColor: '#F2F2F2',
@@ -94,6 +95,7 @@ export const Input = React.memo((props: ATextInputProps) => {
                     textAlignVertical: props.multiline ? 'top' : 'center'
                 }}
                 autoFocus={props.autoFocus}
+                numberOfLines={Platform.OS === 'web' ? lines : undefined}
                 placeholder={props.placeholder}
                 placeholderTextColor="#9D9FA3"
                 autoCapitalize={props.autoCapitalize}
