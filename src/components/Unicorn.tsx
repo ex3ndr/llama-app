@@ -5,11 +5,10 @@ import { Theme } from '../styles/Theme';
 
 export type UnicornInstance = {
     openLeft(): void;
-    openCenter(): void;
     openRight(): void;
 };
 
-export const Unicorn = React.memo(React.forwardRef((props: { left: React.ReactElement, center: React.ReactElement, right: React.ReactElement }, ref: React.ForwardedRef<UnicornInstance>) => {
+export const Unicorn = React.memo(React.forwardRef((props: { left: React.ReactElement, right: React.ReactElement }, ref: React.ForwardedRef<UnicornInstance>) => {
     const pagerRef = React.useRef<PagerView>(null);
     const area = useWindowDimensions();
     const isWide = area.width > Theme.breakpoints.wide;
@@ -17,11 +16,8 @@ export const Unicorn = React.memo(React.forwardRef((props: { left: React.ReactEl
         openLeft() {
             pagerRef.current?.setPage(0);
         },
-        openCenter() {
-            pagerRef.current?.setPage(1);
-        },
         openRight() {
-            pagerRef.current?.setPage(2);
+            pagerRef.current?.setPage(1);
         },
     }));
 
@@ -33,7 +29,7 @@ export const Unicorn = React.memo(React.forwardRef((props: { left: React.ReactEl
                 </View>
                 <View style={{ width: 1, backgroundColor: Theme.divider, opacity: 0.2 }} />
                 <View style={{ width: 900 }}>
-                    {props.center}
+                    {props.right}
                 </View>
             </View>
         )
@@ -50,9 +46,6 @@ export const Unicorn = React.memo(React.forwardRef((props: { left: React.ReactEl
         >
             <View key={"left"}>
                 {props.left}
-            </View>
-            <View key={"center"}>
-                {props.center}
             </View>
             <View key={"right"}>
                 {props.right}

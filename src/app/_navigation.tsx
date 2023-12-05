@@ -6,6 +6,7 @@ import { Theme } from '../styles/Theme';
 import { Connect } from './Connect';
 import { App } from './App';
 import { PickModel } from './PickModel';
+import { ModalProvider } from '../components/ModalProvider';
 
 export type RootStackParamList = {
     Welcome: undefined;
@@ -16,41 +17,42 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-
 export const Navigation = React.memo((props: { initial: 'welcome' | 'app' }) => {
     return (
         <NavigationContainer>
-            <Stack.Navigator
-                initialRouteName={props.initial === 'welcome' ? 'Welcome' : 'App'}
-                screenOptions={{
-                    headerTintColor: Theme.accent,
-                    navigationBarColor: Theme.background,
-                    headerShadowVisible: false,
-                    contentStyle: { backgroundColor: Theme.background },
-                    title: 'Worklet'
-                }}
-            >
-                <Stack.Screen
-                    name="App"
-                    component={App}
-                    options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                    name="Welcome"
-                    component={Welcome}
-                    options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                    name="Connect"
-                    component={Connect}
-                    options={{ title: 'Connect to Ollama' }}
-                />
-                <Stack.Screen
-                    name="PickModel"
-                    component={PickModel}
-                    options={{ title: 'Pick Model', presentation: 'formSheet' }}
-                />
-            </Stack.Navigator>
+            <ModalProvider>
+                <Stack.Navigator
+                    initialRouteName={props.initial === 'welcome' ? 'Welcome' : 'App'}
+                    screenOptions={{
+                        headerTintColor: Theme.accent,
+                        navigationBarColor: Theme.background,
+                        headerShadowVisible: false,
+                        contentStyle: { backgroundColor: Theme.background },
+                        title: 'Worklet'
+                    }}
+                >
+                    <Stack.Screen
+                        name="App"
+                        component={App}
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                        name="Welcome"
+                        component={Welcome}
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                        name="Connect"
+                        component={Connect}
+                        options={{ title: 'Connect to Ollama' }}
+                    />
+                    <Stack.Screen
+                        name="PickModel"
+                        component={PickModel}
+                        options={{ title: 'Pick Model', presentation: 'formSheet' }}
+                    />
+                </Stack.Navigator>
+            </ModalProvider>
         </NavigationContainer>
     )
 });

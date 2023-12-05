@@ -20,3 +20,40 @@
 body {
   background-color: #fff;
 }
+
+.modal-backdrop {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-width: 1px;
+  border-color: white;
+  border-style: solid;
+  border-radius: 8px;
+  width: 620px;
+  height: 540px;
+}
+
+.ReactModal__Overlay {
+  opacity: 0;
+  transition: opacity 350ms cubic-bezier(0.36, 0.66, 0.04, 1);
+}
+
+.ReactModal__Overlay--after-open{
+  opacity: 1;
+}
+
+.ReactModal__Overlay--before-close{
+  opacity: 0;
+}

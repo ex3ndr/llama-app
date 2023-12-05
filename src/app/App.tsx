@@ -3,15 +3,16 @@ import { useAppState } from '../storage/State';
 import { RoundButton } from '../components/RoundButton';
 import { FlatList, Image, Platform, Pressable, View, useWindowDimensions } from 'react-native';
 import { KeyboarAvoidingContent } from '../components/KeyboardAvoidingContent';
-import { useNavigation } from '../utils/useNavigation';
 import { Text } from '../components/Text';
 import LottieView from 'lottie-react-native';
 import { Theme } from '../styles/Theme';
 import { MessageInput } from '../components/MessageInput';
 import { Unicorn, UnicornInstance } from '../components/Unicorn';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
+import { showModal } from '../components/showModal';
+import { PickModel } from './PickModel';
+import { ModalHeader } from '../components/ModalHeader';
 
 const MessageComponent = React.memo((props: { text: string, sender: 'user' | 'assistant', generating: boolean }) => {
     return (
@@ -25,7 +26,9 @@ const MessageComponent = React.memo((props: { text: string, sender: 'user' | 'as
                     <View style={{ flexDirection: 'column', marginLeft: 8, flexGrow: 1, flexBasis: 0 }}>
                         <Text style={{ fontSize: 18, fontWeight: '600', height: 24 }}>{props.sender == 'user' ? 'You' : 'Assistant'}</Text>
                         <Text style={{ fontSize: 16 }}>
-                            {props.text.trim()}
+                            <Text selectable={true}>
+                                {props.text.trim()}
+                            </Text>
                             {'\u00A0'}
                             <View style={{ width: 24, height: 13!, justifyContent: 'center', alignItems: 'center' }}>
                                 {props.generating && (
@@ -46,7 +49,6 @@ const MessageComponent = React.memo((props: { text: string, sender: 'user' | 'as
 });
 
 const EmptyComponent = React.memo(() => {
-    const navigation = useNavigation();
     const state = useAppState();
     return (
         <View style={{ flexGrow: 1, flexBasis: 0, justifyContent: 'center', alignItems: 'center' }}>
@@ -59,7 +61,7 @@ const EmptyComponent = React.memo(() => {
                 display='default'
                 size='normal'
                 loading={state.models === null} disabled={!!state.chat || state.models === null || state.models.length === 0}
-                onPress={() => navigation.navigate('PickModel', { models: state.models! })}
+                onPress={() => showModal(<PickModel />)}
             />
         </View>
     );
@@ -69,13 +71,22 @@ const Sidebar = React.memo(() => {
     const state = useAppState();
     return (
         <View style={{ flexGrow: 1, backgroundColor: Theme.background }}>
-
+            <Header>
+                <Text style={{ color: Theme.text, fontSize: 16, fontWeight: '600', alignSelf: 'center' }}>Chats</Text>
+            </Header>
         </View>
     );
 });
 
+const ChatModal = React.memo(() => {
+    return (
+        <>
+            <ModalHeader title='Settings' />
+        </>
+    );
+});
+
 export const App = React.memo(() => {
-    const safeInsets = useSafeAreaInsets();
     const state = useAppState();
     const [message, setMessage] = React.useState('');
     const ref = React.useRef<UnicornInstance>(null);
@@ -103,9 +114,10 @@ export const App = React.memo(() => {
                         </Pressable>) : undefined
                 }
                 right={
-                    <Pressable style={{ height: 48, width: 48, justifyContent: 'center', alignItems: 'center' }} onPress={() => ref.current?.openRight()}>
-                        <Ionicons name="caret-forward" size={24} color={Theme.text} />
-                    </Pressable>
+                    !!state.chat ?
+                        (<Pressable style={{ height: 48, width: 48, justifyContent: 'center', alignItems: 'center' }} onPress={() => showModal(<ChatModal />)}>
+                            <Ionicons name="cog" size={24} color={Theme.text} />
+                        </Pressable>) : undefined
                 }
             >
                 {!!state.chat && (
@@ -147,23 +159,7 @@ export const App = React.memo(() => {
         </View >
     );
 
-    // Right
-    let right: React.ReactElement
-    if (state.chat) {
-        right = (
-            <View>
-
-            </View>
-        );
-    } else {
-        right = (
-            <View style={{ flexGrow: 1, flexBasis: 0, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, opacity: 0.6 }}>Please, start a chat</Text>
-            </View>
-        );
-    }
-
     return (
-        <Unicorn ref={ref} left={left} center={center} right={right} />
+        <Unicorn ref={ref} left={left} right={center} />
     );
 });
