@@ -12,6 +12,7 @@ interface AppState {
     chat: ChatState | null,
     setLastModel: (model: string | null) => void,
     sendMessage: (message: string) => void,
+    stopInference: () => void,
     onInferenceIntermediate: (message: string) => void
     onInferenceResult: (message: string, context: string) => void
 };
@@ -159,7 +160,23 @@ export async function loadState() {
                     return state
                 }
             })
-        }
+        },
+        stopInference() {
+            set((state) => {
+                if (state.chat && state.chat.state === 'inference') {
+                    return {
+                        ...state,
+                        chat: {
+                            ...state.chat,
+                            state: 'idle',
+                            messages: state.chat.messages.slice(0, state.chat.messages.length - 1)
+                        }
+                    };
+                } else {
+                    return state
+                }
+            })
+        },
     }));
     _state = state;
 

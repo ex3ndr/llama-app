@@ -88,6 +88,9 @@ export const App = React.memo(() => {
             setMessage('');
         }
     }
+    const doStop = () => {
+        state.stopInference();
+    }
 
     // Chat list
     const left = <Sidebar />;
@@ -140,7 +143,9 @@ export const App = React.memo(() => {
                                     value={message}
                                     onChangeText={setMessage}
                                     onSend={doSend}
-                                    enabled={message.trim().length > 0 && !!state.lastModel}
+                                    onStop={doStop}
+                                    generating={state.chat && state.chat.state === 'inference' ? true : false}
+                                    enabled={!!state.lastModel}
                                 />
                             </View>
                             {Platform.OS === 'web' && (
