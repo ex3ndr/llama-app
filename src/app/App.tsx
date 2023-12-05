@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { useAppState } from '../storage/State';
 import { RoundButton } from '../components/RoundButton';
-import { FlatList, Image, Platform, Pressable, View, useWindowDimensions } from 'react-native';
+import { Image, Platform, Pressable, View, useWindowDimensions } from 'react-native';
 import { KeyboarAvoidingContent } from '../components/KeyboardAvoidingContent';
 import { Text } from '../components/Text';
-import LottieView from 'lottie-react-native';
 import { Theme } from '../styles/Theme';
 import { MessageInput } from '../components/MessageInput';
 import { Unicorn, UnicornInstance } from '../components/Unicorn';
@@ -13,6 +12,8 @@ import { Header } from '../components/Header';
 import { showModal } from '../components/showModal';
 import { PickModel } from './PickModel';
 import { ModalHeader } from '../components/ModalHeader';
+import { FlashList } from '@shopify/flash-list';
+import { Typing } from '../components/Typing';
 
 const MessageComponent = React.memo((props: { text: string, sender: 'user' | 'assistant', generating: boolean }) => {
     return (
@@ -25,21 +26,9 @@ const MessageComponent = React.memo((props: { text: string, sender: 'user' | 'as
                     />
                     <View style={{ flexDirection: 'column', marginLeft: 8, flexGrow: 1, flexBasis: 0 }}>
                         <Text style={{ fontSize: 18, fontWeight: '600', height: 24 }}>{props.sender == 'user' ? 'You' : 'Assistant'}</Text>
-                        <Text style={{ fontSize: 16 }}>
-                            <Text selectable={true}>
-                                {props.text.trim()}
-                            </Text>
-                            {'\u00A0'}
-                            <View style={{ width: 24, height: 13!, justifyContent: 'center', alignItems: 'center' }}>
-                                {props.generating && (
-                                    <LottieView
-                                        style={{ width: 32!, height: 34 }}
-                                        autoPlay={true}
-                                        loop={true}
-                                        source={require('../../assets/typing.json')}
-                                    />
-                                )}
-                            </View>
+                        <Text style={{ fontSize: 16, lineHeight: 22 }} selectable={true}>
+                            {props.text.trim()}
+                            {!!props.generating && <Typing />}
                         </Text>
                     </View>
                 </View>
@@ -133,7 +122,7 @@ export const App = React.memo(() => {
             </Header>
             <KeyboarAvoidingContent>
                 {!!state.chat && (
-                    <FlatList
+                    <FlashList
                         data={state.chat ? [...state.chat.messages].reverse() : []}
                         renderItem={(item) => (<MessageComponent text={item.item.content.value} sender={item.item.sender} generating={item.item.content.generating ? true : false} />)}
                         style={{ flexGrow: 1, flexBasis: 0 }}
