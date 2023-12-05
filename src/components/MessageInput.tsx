@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Platform, Pressable, TextInput, View } from 'react-native';
+import { NativeSyntheticEvent, Platform, Pressable, TextInput, TextInputKeyPressEventData, TextInputSubmitEditingEventData, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export const MessageInput = React.memo((props: {
@@ -22,6 +22,24 @@ export const MessageInput = React.memo((props: {
             }
         }
     }, [props.enabled, props.generating, actionEnabled, props.onStop, props.onSend]);
+
+    // Submit editing
+    const onKeyPress = React.useCallback((e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+        if (Platform.OS === 'web') {
+            if (actionEnabled && !props.generating) {
+                let nativeEvent = e.nativeEvent as any;
+
+                // https://github.com/necolas/react-native-web/blob/a3ea2a0a4fd346a1b32e6cef527878c8e433eef8/packages/react-native-web/src/exports/TextInput/index.js#L86
+                let isComposing = nativeEvent.isComposing || nativeEvent.keyCode === 229;
+
+                // https://github.com/necolas/react-native-web/blob/a3ea2a0a4fd346a1b32e6cef527878c8e433eef8/packages/react-native-web/src/exports/TextInput/index.js#L316C9-L316C9
+                if ((e as any).key === 'Enter' && !(e as any).shiftKey && !isComposing) {
+                    e.preventDefault();
+                    props.onSend();
+                }
+            }
+        }
+    }, [props.value, actionEnabled, props.generating, props.onSend]);
 
     return (
         <View
@@ -50,8 +68,7 @@ export const MessageInput = React.memo((props: {
                 numberOfLines={Platform.OS === 'web' ? Math.min(props.value.split('\n').length, 4) : undefined}
                 value={props.value}
                 onChangeText={props.onChangeText}
-                onSubmitEditing={(Platform.OS === 'web' && actionEnabled && !props.generating) ? props.onSend : undefined}
-                blurOnSubmit={Platform.OS === 'web'}
+                onKeyPress={onKeyPress}
             />
             <Pressable
                 style={{
