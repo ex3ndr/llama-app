@@ -147,7 +147,12 @@ export const App = React.memo(() => {
                     <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
                         <View style={{ flexDirection: 'column', alignItems: 'stretch', flexGrow: 1, flexBasis: 0, maxWidth: 900 }}>
                             <View style={{ marginBottom: 8, marginHorizontal: 16, flexGrow: 0, flexDirection: 'row', gap: 16 }}>
-                                <MessageInput value={message} onChangeText={setMessage} onSend={doSend} enabled={message.trim().length > 0 && !!state.lastModel} />
+                                <MessageInput
+                                    value={message}
+                                    onChangeText={setMessage}
+                                    onSend={doSend}
+                                    enabled={message.trim().length > 0 && !!state.lastModel}
+                                />
                             </View>
                             {Platform.OS === 'web' && (
                                 <View style={{ height: 32 }} />

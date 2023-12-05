@@ -30,6 +30,8 @@ export const MessageInput = React.memo((props: { value: string, onChangeText: (v
                 numberOfLines={Platform.OS === 'web' ? Math.min(props.value.split('\n').length, 4) : undefined}
                 value={props.value}
                 onChangeText={props.onChangeText}
+                onSubmitEditing={Platform.OS === 'web' ? props.onSend : undefined}
+                blurOnSubmit={Platform.OS === 'web'}
             />
             <Pressable disabled={!props.enabled} style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center', marginBottom: 2, marginRight: 2, opacity: props.enabled ? 1 : 0.3, alignSelf: 'flex-end' }} onPress={props.onSend}>
                 <View style={{ backgroundColor: 'black', width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}>
