@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useAppState } from '../storage/State';
 import { RoundButton } from '../components/RoundButton';
-import { Image, Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
+import { FlatList, Image, Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { KeyboarAvoidingContent } from '../components/KeyboardAvoidingContent';
 import { Text } from '../components/Text';
 import { Theme } from '../styles/Theme';
@@ -174,7 +174,15 @@ export const App = React.memo(() => {
                 )}
             </Header>
             <KeyboarAvoidingContent>
-                {!!state.chat && (
+                {!!state.chat && (Platform.OS === 'web' ? (
+                    <FlatList
+                        key={state.chat.id}
+                        data={state.chat.messages}
+                        renderItem={(item) => (<MessageComponent text={item.item.content.value} sender={item.item.sender} generating={item.item.content.generating ? true : false} model={state.chat!.model} />)}
+                        contentContainerStyle={{ paddingTop: 64, paddingBottom: 32, flexDirection: 'column-reverse' }}
+                        style={{ flexDirection: 'column-reverse' }}
+                    />
+                ) : (
                     <FlashList
                         key={state.chat.id}
                         data={[...state.chat.messages].reverse()}
@@ -183,7 +191,7 @@ export const App = React.memo(() => {
                         inverted={true}
                         estimatedItemSize={74}
                     />
-                )}
+                ))}
                 {!state.chat && <EmptyComponent />}
 
                 {!!state.lastModel && (
