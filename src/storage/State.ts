@@ -2,7 +2,7 @@ import { ollamaInferenceStreaming } from "../api/ollamaInference";
 import { ollamaTags } from "../api/ollamaTags";
 import { InvalidateSync } from "../utils/invalidate";
 import { sync } from "../utils/sync";
-import { readEndpoint } from "./storage";
+import { readEndpoint, readLastModel, readModels, writeLastModel, writeModels } from "./storage";
 import { StoreApi, UseBoundStore, create } from 'zustand';
 
 interface AppState {
@@ -52,10 +52,11 @@ export async function loadState() {
     // Create state
     const state = create<AppState>((set) => ({
         endpoint: endpoint,
-        lastModel: null,
-        models: null,
+        lastModel: readLastModel(),
+        models: readModels(),
         chat: null,
         setLastModel(model) {
+            writeLastModel(model);
             set((state) => ({ ...state, lastModel: model }))
         },
         sendMessage(message) {
@@ -205,6 +206,7 @@ export async function loadState() {
     // Start models sync
     sync({ interval: 60 /* 1 min */ }, async () => {
         let models = await ollamaTags(endpoint);
+        writeModels(models);
         state.setState(s => ({ ...s, models }));
     });
 }

@@ -35,3 +35,20 @@ export function readModels(): string[] | null {
 export function writeModels(src: string[]) {
     storage.set('models', JSON.stringify(src));
 }
+
+export function readLastModel(): string | null {
+    let ex = storage.getString('last_model');
+    if (ex) {
+        return ex;
+    } else {
+        return null;
+    }
+}
+
+export function writeLastModel(src: string | null) {
+    if (src) {
+        storage.set('last_model', src);
+    } else {
+        storage.delete('last_model');
+    }
+}
