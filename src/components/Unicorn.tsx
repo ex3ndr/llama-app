@@ -25,6 +25,20 @@ export const Unicorn = React.memo(React.forwardRef((props: { left: React.ReactEl
         },
     }));
 
+    if (isWide) {
+        return (
+            <View style={{ flexDirection: 'row', flexGrow: 1, flexBasis: 0, backgroundColor: Theme.background, alignItems: 'stretch' }}>
+                <View style={{ flexGrow: 1, flexBasis: 0 }}>
+                    {props.left}
+                </View>
+                <View style={{ width: 1, backgroundColor: Theme.divider, opacity: 0.2 }} />
+                <View style={{ width: 900 }}>
+                    {props.center}
+                </View>
+            </View>
+        )
+    }
+
     return (
         <PagerView
             style={{ backgroundColor: Theme.background, flexGrow: 1 }}
