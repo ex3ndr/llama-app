@@ -1,4 +1,5 @@
 import { MMKV } from 'react-native-mmkv';
+import { Dialog, Message } from './types';
 
 const storage = new MMKV();
 
@@ -51,4 +52,29 @@ export function writeLastModel(src: string | null) {
     } else {
         storage.delete('last_model');
     }
+}
+
+export function writeDialogs(dialogs: Dialog[]) {
+    storage.set('dialogs', JSON.stringify(dialogs));
+}
+
+export function readDialogs(): Dialog[] {
+    let ex = storage.getString('dialogs');
+    if (ex) {
+        return JSON.parse(ex);
+    } else {
+        return [];
+    }
+}
+
+export function writeChat(id: string, data: {
+    model: string,
+    context: string | null,
+    messages: Message[]
+}) {
+    storage.set('chat_' + id, JSON.stringify(data));
+}
+
+export function loadChat(id: string): { model: string, context: string | null, messages: Message[] } {
+    return JSON.parse(storage.getString('chat_' + id)!);
 }

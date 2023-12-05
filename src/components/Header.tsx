@@ -11,16 +11,13 @@ export const Header = React.memo((props: {
 
     const safeInsets = useSafeAreaInsets();
     let maxWidth = 900;
-    if (props.left) {
-        maxWidth -= 48;
-    }
-    if (props.right) {
-        maxWidth -= 48;
+    if ((!!props.right || !!props.left)) {
+        maxWidth -= 48 * 2;
     }
 
     return (
         <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row', backgroundColor: Theme.background, paddingTop: safeInsets.top, }}>
-            {!!props.left && (
+            {(!!props.right || !!props.left) && (
                 <View style={{ width: 48, height: 48 }}>
                     {props.left}
                 </View>
@@ -30,7 +27,7 @@ export const Header = React.memo((props: {
                     {props.children}
                 </View>
             </View>
-            {!!props.right && (
+            {(!!props.right || !!props.left) && (
                 <View style={{ width: 48, height: 48 }}>
                     {props.right}
                 </View>

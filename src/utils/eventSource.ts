@@ -25,7 +25,6 @@ export function eventSource(url: string, data: any, handler: (data: string | nul
             abortRequest(requestId);
             return;
         }
-        log('Requeted');
 
         // Subscribe
         let ended = false;

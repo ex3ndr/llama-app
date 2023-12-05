@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useAppState } from '../storage/State';
 import { RoundButton } from '../components/RoundButton';
-import { Image, Platform, Pressable, View, useWindowDimensions } from 'react-native';
+import { Image, Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { KeyboarAvoidingContent } from '../components/KeyboardAvoidingContent';
 import { Text } from '../components/Text';
 import { Theme } from '../styles/Theme';
@@ -14,16 +14,22 @@ import { PickModel } from './PickModel';
 import { ModalHeader } from '../components/ModalHeader';
 import { FlashList } from '@shopify/flash-list';
 import { Typing } from '../components/Typing';
+import { AIAvatar } from '../components/AIAvatar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const MessageComponent = React.memo((props: { text: string, sender: 'user' | 'assistant', generating: boolean }) => {
+const MessageComponent = React.memo((props: { text: string, sender: 'user' | 'assistant', generating: boolean, model: string }) => {
     return (
         <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
             <View style={{ flexDirection: 'column', alignItems: 'stretch', flexGrow: 1, flexBasis: 0, maxWidth: 900 }}>
                 <View style={{ paddingLeft: 24, paddingRight: 24, flexDirection: 'row', paddingVertical: 4 }}>
-                    <Image
-                        style={{ width: 24, height: 24 }}
-                        source={props.sender === 'user' ? require('../../assets/avatar_user.png') : require('../../assets/avatar_assistant.png')}
-                    />
+                    {props.sender === 'user' ? (
+                        <Image
+                            style={{ width: 24, height: 24 }}
+                            source={require('../../assets/avatar_user.png')}
+                        />
+                    ) : (
+                        <AIAvatar size={24} model={props.model} />
+                    )}
                     <View style={{ flexDirection: 'column', marginLeft: 8, flexGrow: 1, flexBasis: 0 }}>
                         <Text style={{ fontSize: 18, fontWeight: '600', height: 24 }}>{props.sender == 'user' ? 'You' : 'Assistant'}</Text>
                         <Text style={{ fontSize: 16, lineHeight: 22 }} selectable={true}>
@@ -56,13 +62,53 @@ const EmptyComponent = React.memo(() => {
     );
 });
 
-const Sidebar = React.memo(() => {
+const Sidebar = React.memo((props: { unicorn: React.RefObject<UnicornInstance> }) => {
     const state = useAppState();
+    const safeArea = useSafeAreaInsets();
+    const doOpenSettings = () => {
+        showModal(<ChatModal />);
+    }
+    const doOpenRight = () => {
+        props.unicorn.current?.openRight();
+    }
+    const doOpenChat = (id: string) => {
+        state.openChat(id);
+        props.unicorn.current?.openRight();
+    }
+    const doOpenNew = () => {
+        state.newChat();
+        props.unicorn.current?.openRight();
+    }
     return (
         <View style={{ flexGrow: 1, backgroundColor: Theme.background }}>
-            <Header>
+            <Header
+                left={<Pressable style={{ height: 48, width: 48, justifyContent: 'center', alignItems: 'center' }} onPress={doOpenSettings}>
+                    <Ionicons name="cog" size={24} color={Theme.text} />
+                </Pressable>}
+                right={<Pressable style={{ height: 48, width: 48, justifyContent: 'center', alignItems: 'center' }} onPress={doOpenRight}>
+                    <Ionicons name="caret-forward" size={24} color={Theme.text} />
+                </Pressable>}
+            >
                 <Text style={{ color: Theme.text, fontSize: 16, fontWeight: '600', alignSelf: 'center' }}>Chats</Text>
             </Header>
+            <ScrollView style={{ flexGrow: 1, flexBasis: 0 }} contentContainerStyle={{ paddingBottom: safeArea.bottom + 128 }}>
+                {state.dialogs.map((v) => (
+                    <Pressable key={v.id} style={{ height: 56, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' }} onPress={() => doOpenChat(v.id)}>
+                        <View style={{ width: 48, height: 48, marginRight: 16 }}>
+                            <AIAvatar size={48} model={v.model} />
+                        </View>
+                        <View style={{ flexGrow: 1, flexBasis: 0 }}>
+                            <Text style={{ fontSize: 18, fontWeight: '500' }} numberOfLines={1}>{v.title}</Text>
+                            <Text style={{ fontSize: 14, opacity: 0.6 }} numberOfLines={1}>{v.model}</Text>
+                        </View>
+                    </Pressable>
+                ))}
+            </ScrollView>
+            <View style={{ position: 'absolute', bottom: safeArea.bottom, left: 0, right: 0, justifyContent: 'center', alignItems: 'center' }}>
+                <Pressable style={[Theme.shadows[4], { width: 64, height: 64, backgroundColor: 'white', borderRadius: 32, marginBottom: 32, justifyContent: 'center', alignItems: 'center' }]} onPress={doOpenNew}>
+                    <Ionicons name="add" size={48} color={Theme.text} style={{ transform: [{ translateX: 2.5 }, { translateY: 0.5 }] }} />
+                </Pressable>
+            </View>
         </View>
     );
 });
@@ -93,7 +139,16 @@ export const App = React.memo(() => {
     }
 
     // Chat list
-    const left = <Sidebar />;
+    const left = <Sidebar unicorn={ref} />;
+
+    let avatar: React.ReactNode | undefined = undefined;
+    if (state.chat || state.lastModel) {
+        avatar = (
+            <View style={{ width: 48, height: 48, justifyContent: 'center', alignItems: 'center' }}>
+                <AIAvatar size={24} model={state.chat ? state.chat.model : state.lastModel!} />
+            </View>
+        );
+    }
 
     // Chat
     const center = (
@@ -105,12 +160,7 @@ export const App = React.memo(() => {
                             <Ionicons name="caret-back" size={24} color={Theme.text} />
                         </Pressable>) : undefined
                 }
-                right={
-                    !!state.chat ?
-                        (<Pressable style={{ height: 48, width: 48, justifyContent: 'center', alignItems: 'center' }} onPress={() => showModal(<ChatModal />)}>
-                            <Ionicons name="cog" size={24} color={Theme.text} />
-                        </Pressable>) : undefined
-                }
+                right={avatar}
             >
                 {!!state.chat && (
                     <View style={{ flexDirection: 'column', justifyContent: 'center' }}>
@@ -126,11 +176,12 @@ export const App = React.memo(() => {
             <KeyboarAvoidingContent>
                 {!!state.chat && (
                     <FlashList
-                        data={state.chat ? [...state.chat.messages].reverse() : []}
-                        renderItem={(item) => (<MessageComponent text={item.item.content.value} sender={item.item.sender} generating={item.item.content.generating ? true : false} />)}
-                        style={{ flexGrow: 1, flexBasis: 0 }}
+                        key={state.chat.id}
+                        data={[...state.chat.messages].reverse()}
+                        renderItem={(item) => (<MessageComponent text={item.item.content.value} sender={item.item.sender} generating={item.item.content.generating ? true : false} model={state.chat!.model} />)}
                         contentContainerStyle={{ paddingTop: 32, paddingBottom: 64 }}
                         inverted={true}
+                        estimatedItemSize={74}
                     />
                 )}
                 {!state.chat && <EmptyComponent />}

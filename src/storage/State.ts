@@ -2,34 +2,33 @@ import { ollamaInferenceStreaming } from "../api/ollamaInference";
 import { ollamaTags } from "../api/ollamaTags";
 import { InvalidateSync } from "../utils/invalidate";
 import { sync } from "../utils/sync";
-import { readEndpoint, readLastModel, readModels, writeLastModel, writeModels } from "./storage";
+import { loadChat, readDialogs, readEndpoint, readLastModel, readModels, writeChat, writeDialogs, writeLastModel, writeModels } from "./storage";
 import { StoreApi, UseBoundStore, create } from 'zustand';
+import { Dialog, Message } from "./types";
+import { randomId } from "../utils/randomId";
+import { createDialogTitle } from "../utils/createDialogTitle";
+import { log } from "../utils/log";
 
 interface AppState {
     endpoint: string,
     lastModel: string | null,
     models: string[] | null,
     chat: ChatState | null,
+    dialogs: Dialog[],
     setLastModel: (model: string | null) => void,
     sendMessage: (message: string) => void,
     stopInference: () => void,
     onInferenceIntermediate: (message: string) => void
-    onInferenceResult: (message: string, context: string) => void
+    onInferenceResult: (message: string, context: string) => void,
+    openChat: (id: string) => void,
+    newChat: () => void
 };
 
-interface MessageState {
-    sender: 'assistant' | 'user'
-    content: {
-        kind: 'text',
-        value: string,
-        generating?: boolean
-    }
-}
-
 interface ChatState {
+    id: string,
     state: 'inference' | 'idle'
     model: string,
-    messages: MessageState[],
+    messages: Message[],
     context: string | null
 }
 
@@ -56,56 +55,80 @@ export async function loadState() {
         lastModel: readLastModel(),
         models: readModels(),
         chat: null,
+        dialogs: readDialogs(),
         setLastModel(model) {
             writeLastModel(model);
-            set((state) => ({ ...state, lastModel: model }))
+            set((state) => ({ ...state, lastModel: model }));
         },
         sendMessage(message) {
             set((state) => {
                 if (!state.chat) {
+
+                    //
+                    // Chat creation
+                    //
+
+                    let id = randomId();
+                    let model = state.lastModel!;
+                    let dialogs = [...state.dialogs, { id, title: createDialogTitle(message), model }];
+                    let messages: Message[] = [{
+                        sender: 'user',
+                        content: {
+                            kind: 'text',
+                            value: message
+                        }
+                    }, {
+                        sender: 'assistant',
+                        content: {
+                            kind: 'text',
+                            value: '',
+                            generating: true
+                        }
+                    }];
+
+                    // Update dialogs
+                    writeDialogs(dialogs);
+                    writeChat(id, { model, context: null, messages });
+
+                    // Return updates
                     return {
                         ...state,
                         chat: {
+                            id,
                             state: 'inference',
-                            model: state.lastModel!,
-                            messages: [{
-                                sender: 'user',
-                                content: {
-                                    kind: 'text',
-                                    value: message
-                                }
-                            }, {
-                                sender: 'assistant',
-                                content: {
-                                    kind: 'text',
-                                    value: '',
-                                    generating: true
-                                }
-                            }],
+                            model,
+                            messages: messages,
                             context: null
-                        }
+                        },
+                        dialogs
                     };
                 } else {
                     if (state.chat.state === 'idle') {
+
+                        // Update chat
+                        let messages: Message[] = [...state.chat.messages, {
+                            sender: 'user',
+                            content: {
+                                kind: 'text',
+                                value: message
+                            }
+                        }, {
+                            sender: 'assistant',
+                            content: {
+                                kind: 'text',
+                                value: '',
+                                generating: true
+                            }
+                        }];
+                        writeChat(state.chat.id, { model: state.chat.model, context: null, messages });
+
+                        // Return updates
                         return {
                             ...state,
                             chat: {
                                 ...state.chat,
                                 state: 'inference',
-                                messages: [...state.chat.messages, {
-                                    sender: 'user',
-                                    content: {
-                                        kind: 'text',
-                                        value: message
-                                    }
-                                }, {
-                                    sender: 'assistant',
-                                    content: {
-                                        kind: 'text',
-                                        value: '',
-                                        generating: true
-                                    }
-                                }]
+                                messages
                             }
                         };
                     } else {
@@ -113,11 +136,26 @@ export async function loadState() {
                     }
                 }
             });
+
+            // Invalidate inference
             inference.invalidate();
         },
         onInferenceIntermediate(message) {
             set((state) => {
                 if (state.chat && state.chat.state === 'inference') {
+
+                    // Update chat
+                    let messages: Message[] = [...state.chat.messages.slice(0, state.chat.messages.length - 1), {
+                        sender: 'assistant',
+                        content: {
+                            kind: 'text',
+                            value: message,
+                            generating: true
+                        }
+                    }];
+                    writeChat(state.chat.id, { model: state.chat.model, context: null, messages });
+
+                    // Return result
                     return {
                         ...state,
                         chat: {
@@ -136,46 +174,102 @@ export async function loadState() {
                 } else {
                     return state
                 }
-            })
+            });
+
+            // Invalidate inference
+            inference.invalidate();
         },
         onInferenceResult(message, context) {
             set((state) => {
                 if (state.chat && state.chat.state === 'inference') {
+
+                    // Update chat
+                    let messages: Message[] = [...state.chat.messages.slice(0, state.chat.messages.length - 1), {
+                        sender: 'assistant',
+                        content: {
+                            kind: 'text',
+                            value: message
+                        }
+                    }];
+                    writeChat(state.chat.id, { model: state.chat.model, context: null, messages });
+
+                    // Return result
                     return {
                         ...state,
                         chat: {
                             ...state.chat,
                             state: 'idle',
                             context,
-                            messages: [...state.chat.messages.slice(0, state.chat.messages.length - 1), {
-                                sender: 'assistant',
-                                content: {
-                                    kind: 'text',
-                                    value: message
-                                }
-                            }]
+                            messages
                         }
                     };
                 } else {
                     return state
                 }
-            })
+            });
+
+            // Invalidate inference
+            inference.invalidate();
         },
         stopInference() {
             set((state) => {
                 if (state.chat && state.chat.state === 'inference') {
+
+                    // Update chat
+                    let messages: Message[] = state.chat.messages.slice(0, state.chat.messages.length - 1);
+                    writeChat(state.chat.id, { model: state.chat.model, context: null, messages });
+
                     return {
                         ...state,
                         chat: {
                             ...state.chat,
                             state: 'idle',
-                            messages: state.chat.messages.slice(0, state.chat.messages.length - 1)
+                            messages
                         }
                     };
                 } else {
                     return state
                 }
-            })
+            });
+
+            // Invalidate inference
+            inference.invalidate();
+        },
+        openChat(id) {
+
+            // Load chat
+            let chat = loadChat(id);
+
+            // Resolve state
+            let state: 'idle' | 'inference' = 'idle';
+            if (chat.messages[chat.messages.length - 1].content.generating) {
+                state = 'inference';
+            }
+
+            // Update state
+            set((s) => {
+                return {
+                    ...s,
+                    chat: {
+                        id,
+                        model: chat.model,
+                        state,
+                        context: chat.context,
+                        messages: chat.messages
+                    }
+                }
+            });
+
+            // Invalidate inference
+            inference.invalidate();
+        },
+        newChat() {
+            set((s) => {
+                return {
+                    ...s,
+                    chat: null
+                }
+            });
         },
     }));
     _state = state;
@@ -188,35 +282,48 @@ export async function loadState() {
             // Streaming of inference
             let res = '';
             let context: number[] | null = null;
-            for await (let tokens of ollamaInferenceStreaming({
-                endpoint,
-                model: now.chat!.model,
-                message: now.chat!.messages[now.chat!.messages.length - 2].content.value,
-                context: now.chat!.context
-            })) {
+            let id = now.chat.id;
+            try {
+                log('Starting inference...');
+                for await (let tokens of ollamaInferenceStreaming({
+                    endpoint,
+                    model: now.chat!.model,
+                    message: now.chat!.messages[now.chat!.messages.length - 2].content.value,
+                    context: now.chat!.context
+                })) {
 
-                // Update message
-                res += tokens.response;
+                    // Update message
+                    res += tokens.response;
 
-                // If we are still in inference
-                if (now.chat && now.chat.state === 'inference') {
-                    now.onInferenceIntermediate(res);
+                    // If we are still in inference
+                    now = state.getState()
+                    if (now.chat && now.chat.state === 'inference' && now.chat.id === id) {
+                        now.onInferenceIntermediate(res);
+                    } else {
+                        log('Inference aborted');
+                        throw Error('Aborted');
+                    }
+
+                    // What if we done
+                    if (tokens.done) {
+                        context = tokens.context!;
+                        break;
+                    }
+                }
+                if (!context) {
+                    throw Error('Context was not received');
+                }
+
+                // Apply result
+                now = state.getState();
+                if (now.chat && now.chat.state === 'inference' && now.chat.id === id) {
+                    now.onInferenceResult(res, JSON.stringify(context));
                 } else {
-                    throw Error('Aborted');
+                    log('Inference aborted');
                 }
-
-                // What if we done
-                if (tokens.done) {
-                    context = tokens.context!;
-                    break;
-                }
+            } finally {
+                log('Inference stopped');
             }
-            if (!context) {
-                throw Error('Context was not received');
-            }
-
-            // Apply result
-            now.onInferenceResult(res, JSON.stringify(context));
         }
     });
 
