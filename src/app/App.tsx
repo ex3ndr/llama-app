@@ -177,7 +177,7 @@ export const App = React.memo(() => {
                 {!!state.chat && (Platform.OS === 'web' ? (
                     <FlatList
                         key={state.chat.id}
-                        data={state.chat.messages}
+                        data={[...state.chat.messages].reverse()}
                         renderItem={(item) => (<MessageComponent text={item.item.content.value} sender={item.item.sender} generating={item.item.content.generating ? true : false} model={state.chat!.model} />)}
                         contentContainerStyle={{ paddingTop: 64, paddingBottom: 32, flexDirection: 'column-reverse' }}
                         style={{ flexDirection: 'column-reverse' }}
