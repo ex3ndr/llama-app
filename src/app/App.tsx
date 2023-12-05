@@ -1,16 +1,17 @@
 import * as React from 'react';
 import { useAppState } from '../storage/State';
 import { RoundButton } from '../components/RoundButton';
-import { FlatList, Image, Platform, View, useWindowDimensions } from 'react-native';
+import { FlatList, Image, Platform, Pressable, View, useWindowDimensions } from 'react-native';
 import { KeyboarAvoidingContent } from '../components/KeyboardAvoidingContent';
 import { useNavigation } from '../utils/useNavigation';
 import { Text } from '../components/Text';
 import LottieView from 'lottie-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Drawer } from 'react-native-drawer-layout';
 import { Theme } from '../styles/Theme';
 import { MessageInput } from '../components/MessageInput';
-
+import { Unicorn, UnicornInstance } from '../components/Unicorn';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Header } from '../components/Header';
 
 const MessageComponent = React.memo((props: { text: string, sender: 'user' | 'assistant', generating: boolean }) => {
     return (
@@ -67,18 +68,19 @@ const EmptyComponent = React.memo(() => {
 const Sidebar = React.memo(() => {
     const state = useAppState();
     return (
-        <View style={{ flexGrow: 1, backgroundColor: '#dfdfdf' }}>
+        <View style={{ flexGrow: 1, backgroundColor: Theme.background }}>
 
         </View>
     );
 });
 
 export const App = React.memo(() => {
+    const safeInsets = useSafeAreaInsets();
     const state = useAppState();
-    const navigation = useNavigation();
-    const insets = useSafeAreaInsets();
-    const area = useWindowDimensions();
     const [message, setMessage] = React.useState('');
+    const ref = React.useRef<UnicornInstance>(null);
+    const area = useWindowDimensions();
+    const isWide = area.width > Theme.breakpoints.wide;
     const doSend = () => {
         let m = message.trim();
         if (m.length > 0 && state.lastModel) {
@@ -86,55 +88,82 @@ export const App = React.memo(() => {
             setMessage('');
         }
     }
-    const isWide = area.width > 800;
-    const [open, setOpen] = React.useState(false);
+
+    // Chat list
+    const left = <Sidebar />;
+
+    // Chat
+    const center = (
+        <View style={{ backgroundColor: Theme.background, flexGrow: 1, flexBasis: 0 }}>
+            <Header
+                left={
+                    !isWide ? (
+                        <Pressable style={{ height: 48, width: 48, justifyContent: 'center', alignItems: 'center' }} onPress={() => ref.current?.openLeft()}>
+                            <Ionicons name="caret-back" size={24} color={Theme.text} />
+                        </Pressable>) : undefined
+                }
+                right={
+                    <Pressable style={{ height: 48, width: 48, justifyContent: 'center', alignItems: 'center' }} onPress={() => ref.current?.openRight()}>
+                        <Ionicons name="caret-forward" size={24} color={Theme.text} />
+                    </Pressable>
+                }
+            >
+                {!!state.chat && (
+                    <View style={{ flexDirection: 'column', justifyContent: 'center' }}>
+                        <Text style={{ color: Theme.text, fontSize: 16, fontWeight: '600', alignSelf: 'center' }}>
+                            {state.chat.model.split(':')[0]}
+                        </Text>
+                        <Text style={{ color: Theme.text, fontSize: 14, fontWeight: '400', alignSelf: 'center', opacity: 0.6 }}>
+                            {state.chat.model.split(':')[1]}
+                        </Text>
+                    </View>
+                )}
+            </Header>
+            <KeyboarAvoidingContent>
+                {!!state.chat && (
+                    <FlatList
+                        data={state.chat ? [...state.chat.messages].reverse() : []}
+                        renderItem={(item) => (<MessageComponent text={item.item.content.value} sender={item.item.sender} generating={item.item.content.generating ? true : false} />)}
+                        style={{ flexGrow: 1, flexBasis: 0 }}
+                        contentContainerStyle={{ paddingTop: 32, paddingBottom: 64 }}
+                        inverted={true}
+                    />
+                )}
+                {!state.chat && <EmptyComponent />}
+
+                {!!state.lastModel && (
+                    <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+                        <View style={{ flexDirection: 'column', alignItems: 'stretch', flexGrow: 1, flexBasis: 0, maxWidth: 900 }}>
+                            <View style={{ marginBottom: 8, marginHorizontal: 16, flexGrow: 0, flexDirection: 'row', gap: 16 }}>
+                                <MessageInput value={message} onChangeText={setMessage} onSend={doSend} enabled={message.trim().length > 0 && !!state.lastModel} />
+                            </View>
+                            {Platform.OS === 'web' && (
+                                <View style={{ height: 32 }} />
+                            )}
+                        </View>
+                    </View>
+                )}
+            </KeyboarAvoidingContent>
+        </View >
+    );
+
+    // Right
+    let right: React.ReactElement
+    if (state.chat) {
+        right = (
+            <View>
+
+            </View>
+        );
+    } else {
+        right = (
+            <View style={{ flexGrow: 1, flexBasis: 0, justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ fontSize: 16, opacity: 0.6 }}>Please, start a chat</Text>
+            </View>
+        );
+    }
 
     return (
-        <Drawer
-            open={open}
-            onOpen={() => setOpen(true)}
-            onClose={() => setOpen(false)}
-            drawerType={isWide ? 'permanent' : 'back'}
-            drawerStyle={{ backgroundColor: '#dfdfdf' }}
-            renderDrawerContent={() => {
-                return (
-                    <Sidebar />
-                );
-            }}
-        >
-            <View style={{ backgroundColor: Theme.background, flexGrow: 1, flexBasis: 0 }}>
-                <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
-                    <View style={{ flexDirection: 'column', alignItems: 'stretch', flexGrow: 1, flexBasis: 0, maxWidth: 900, height: 48, backgroundColor: 'white' }}>
-
-                    </View>
-                </View>
-                <KeyboarAvoidingContent>
-
-                    {!!state.chat && (
-                        <FlatList
-                            data={state.chat ? [...state.chat.messages].reverse() : []}
-                            renderItem={(item) => (<MessageComponent text={item.item.content.value} sender={item.item.sender} generating={item.item.content.generating ? true : false} />)}
-                            style={{ flexGrow: 1, flexBasis: 0 }}
-                            contentContainerStyle={{ paddingTop: 32, paddingBottom: 64 }}
-                            inverted={true}
-                        />
-                    )}
-                    {!state.chat && <EmptyComponent />}
-
-                    {!!state.lastModel && (
-                        <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
-                            <View style={{ flexDirection: 'column', alignItems: 'stretch', flexGrow: 1, flexBasis: 0, maxWidth: 900 }}>
-                                <View style={{ marginBottom: 8, marginHorizontal: 16, flexGrow: 0, flexDirection: 'row', gap: 16 }}>
-                                    <MessageInput value={message} onChangeText={setMessage} onSend={doSend} enabled={message.trim().length > 0 && !!state.lastModel} />
-                                </View>
-                                {Platform.OS === 'web' && (
-                                    <View style={{ height: 32 }} />
-                                )}
-                            </View>
-                        </View>
-                    )}
-                </KeyboarAvoidingContent>
-            </View>
-        </Drawer>
+        <Unicorn ref={ref} left={left} center={center} right={right} />
     );
 });

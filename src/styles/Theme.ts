@@ -66,5 +66,9 @@ export const Theme = {
 
             elevation: 5,
         }
+    },
+
+    breakpoints: {
+        wide: 900
     }
 }
